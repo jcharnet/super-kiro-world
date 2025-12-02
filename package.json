@@ -1,0 +1,11 @@
+{
+  "name": "super-kiro-world",
+  "version": "1.0.0",
+  "description": "Super Kiro World platformer game",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "fast-check": "^3.15.0"
+  }
+}

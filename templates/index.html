@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Kiro World - re:Invent Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #790ECB;
+            box-shadow: 0 0 20px rgba(121, 14, 203, 0.5);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        .game-container {
+            position: relative;
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: -60px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #790ECB;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="instructions">
+            Arrow Keys: Move | Space: Jump | E: Time Warp | R: Restart
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='splash.js') }}"></script>
+    <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
