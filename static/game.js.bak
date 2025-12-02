@@ -929,7 +929,6 @@ class LaserHazard extends Obstacle {
     }
     
     update(deltaTime) {
-        const previousPhase = this.currentPhase;
         this.currentTime += deltaTime;
         
         const totalCycle = this.cycleTime;
@@ -938,19 +937,9 @@ class LaserHazard extends Obstacle {
         if (timeInCycle < this.warningTime) {
             this.currentPhase = 'warning';
             this.dangerous = false;
-            
-            // Play warning sound when entering warning phase
-            if (previousPhase !== 'warning' && typeof audioManager !== 'undefined') {
-                audioManager.playSound('jump'); // Use jump sound as warning beep
-            }
         } else if (timeInCycle < this.warningTime + this.activeTime) {
             this.currentPhase = 'active';
             this.dangerous = true;
-            
-            // Play fire sound when laser activates
-            if (previousPhase !== 'active' && typeof audioManager !== 'undefined') {
-                audioManager.playSound('damage'); // Use damage sound as laser fire
-            }
         } else {
             this.currentPhase = 'inactive';
             this.dangerous = false;
@@ -2296,16 +2285,9 @@ function renderBackground(ctx, camera, frame) {
 
 // ===== HUD =====
 function renderHUD(ctx) {
-    ctx.save(); // Save context state
-    
-    // Reset any transforms or clipping
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    
-    const leftMargin = 40;
+    const leftMargin = 20;
     const lineHeight = 30;
-    let yPos = 40;
+    let yPos = 30;
     
     ctx.font = '20px Courier New';
     
@@ -2330,13 +2312,11 @@ function renderHUD(ctx) {
     // Time warp indicator icons (aligned to the right of the label)
     if (timeWarpsRemaining > 0) {
         ctx.fillStyle = '#790ECB';
-        const iconStartX = leftMargin + 170; // Position after "Time Warps: " text
+        const iconStartX = leftMargin + 150; // Position after "Time Warps: " text
         for (let i = 0; i < timeWarpsRemaining; i++) {
             ctx.fillRect(iconStartX + i * 25, yPos - 15, 20, 20);
         }
     }
-    
-    ctx.restore(); // Restore context state
 }
 
 // ===== GAME OVER / COMPLETE SCREENS =====
@@ -2361,38 +2341,24 @@ function renderLevelComplete(ctx) {
     ctx.fillStyle = '#00000099';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Different message for Level 2 completion
-    if (currentLevel === 2) {
-        ctx.fillStyle = '#FFD700'; // Gold color for victory
-        ctx.font = 'bold 48px Courier New';
-        ctx.textAlign = 'center';
-        ctx.fillText('🎉 VICTORY! 🎉', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 100);
-        
-        ctx.fillStyle = '#00ff00';
-        ctx.font = 'bold 32px Courier New';
-        ctx.fillText('All Levels Complete!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60);
-    } else {
-        ctx.fillStyle = '#00ff00';
-        ctx.font = 'bold 48px Courier New';
-        ctx.textAlign = 'center';
-        ctx.fillText('DEPLOY SUCCESSFUL!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 80);
-    }
+    ctx.fillStyle = '#00ff00';
+    ctx.font = 'bold 48px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('DEPLOY SUCCESSFUL!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 80);
     
     ctx.fillStyle = '#ffffff';
     ctx.font = '20px Courier New';
-    ctx.fillText(`Level: ${currentLevel}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20);
-    ctx.fillText(`Time: ${timeTaken}s`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 5);
-    ctx.fillText(`Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
-    ctx.fillText(`Collectibles: ${score} / ${totalCollectibles}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 55);
-    ctx.fillText(`Lives Remaining: ${lives}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 80);
+    ctx.fillText(`Time: ${timeTaken}s`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20);
+    ctx.fillText(`Metrics: ${score} / ${totalCollectibles}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 10);
+    ctx.fillText(`Lives Remaining: ${lives}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 40);
     
     ctx.font = '24px Courier New';
-    ctx.fillText('Press R to Replay', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 120);
+    ctx.fillText('Press R to Replay', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 90);
     
     if (!window.scoreSubmitted) {
         ctx.font = '16px Courier New';
         ctx.fillStyle = '#790ECB';
-        ctx.fillText('Score saved to leaderboard!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 150);
+        ctx.fillText('Score saved to leaderboard!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 120);
     }
     
     ctx.textAlign = 'left';
@@ -2492,12 +2458,6 @@ function gameLoop() {
             if (currentLevel === 1) {
                 // Transition to level 2
                 gameState = 'levelTransition';
-                
-                // Play transition sound
-                if (typeof audioManager !== 'undefined') {
-                    audioManager.playSound('collect');
-                }
-                
                 setTimeout(() => {
                     loadLevel2();
                     gameState = 'playing';
@@ -2505,12 +2465,6 @@ function gameLoop() {
             } else {
                 // Final completion
                 gameState = 'levelComplete';
-                
-                // Play victory sound
-                if (typeof audioManager !== 'undefined') {
-                    audioManager.playSound('collect');
-                }
-                
                 submitScore();
             }
         }
@@ -2538,9 +2492,6 @@ function gameLoop() {
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         }
         
-    } else if (gameState === 'levelTransition') {
-        renderBackground(ctx, camera, frame);
-        renderLevelTransition(ctx);
     } else if (gameState === 'gameOver') {
         renderBackground(ctx, camera, frame);
         platforms.forEach(p => p.render(ctx, camera));
@@ -2564,6 +2515,79 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+function loadLevel2() {
+    currentLevel = 2;
+    
+    // Clear existing level
+    platforms.length = 0;
+    collectibles.length = 0;
+    powerUps.length = 0;
+    particles.length = 0;
+    obstacleManager.obstacles.length = 0;
+    
+    // Reset player
+    player.x = 100;
+    player.y = 400;
+    player.vx = 0;
+    player.vy = 0;
+    lives = 3;
+    camera.x = 0;
+    
+    // Level 2 platforms (larger gaps)
+    platforms.push(new Platform(0, 550, 600, 50, 'pipeline'));
+    platforms.push(new Platform(800, 550, 300, 50, 'service'));
+    platforms.push(new Platform(1300, 450, 200, 30, 'dashboard'));
+    platforms.push(new Platform(1700, 350, 150, 30, 'pipeline'));
+    platforms.push(new Platform(2050, 450, 200, 30, 'service'));
+    platforms.push(new Platform(2450, 350, 250, 30, 'dashboard'));
+    platforms.push(new Platform(2900, 500, 200, 30, 'pipeline'));
+    platforms.push(new Platform(3300, 550, 700, 50, 'service'));
+    
+    // Moving platforms
+    const mp1 = new MovingPlatform(1150, 500, 120, 20, [
+        { x: 1150, y: 500 },
+        { x: 1150, y: 350 }
+    ], 2);
+    platforms.push(mp1);
+    obstacleManager.addObstacle(mp1);
+    
+    const mp2 = new MovingPlatform(2300, 400, 100, 20, [
+        { x: 2300, y: 400 },
+        { x: 2700, y: 400 }
+    ], 2.5);
+    platforms.push(mp2);
+    obstacleManager.addObstacle(mp2);
+    
+    // Collectibles (more than level 1)
+    for (let i = 0; i < 12; i++) {
+        collectibles.push(new Collectible(500 + i * 250, 300 + Math.random() * 100));
+    }
+    totalCollectibles = collectibles.length;
+    
+    // Power-ups
+    powerUps.push(new PowerUp(900, 480, 'speed'));
+    powerUps.push(new PowerUp(1800, 280, 'invincibility'));
+    powerUps.push(new PowerUp(2500, 280, 'doubleJump'));
+    
+    // Lasers
+    obstacleManager.addObstacle(new LaserHazard(1500, 500, 'horizontal', 3, 1, 1));
+    obstacleManager.addObstacle(new LaserHazard(2200, 300, 'vertical', 4, 1, 1.5));
+    obstacleManager.addObstacle(new LaserHazard(3100, 500, 'horizontal', 3.5, 1, 1));
+    
+    // Spikes
+    obstacleManager.addObstacle(new SpikeTrap(1650, 330, 'up'));
+    obstacleManager.addObstacle(new SpikeTrap(2400, 330, 'up'));
+    obstacleManager.addObstacle(new SpikeTrap(2850, 480, 'up'));
+    
+    // Falling platforms
+    const fp1 = new FallingPlatform(1900, 400, 100, 20);
+    platforms.push(fp1);
+    obstacleManager.addObstacle(fp1);
+    
+    // Deploy gate at end
+    deployGate.x = 3800;
+    deployGate.y = 450;
+}
 
 function renderLevelTransition(ctx) {
     ctx.fillStyle = '#000000dd';
