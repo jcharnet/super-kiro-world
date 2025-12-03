@@ -10,3 +10,11 @@ export const MAX_TIME_WARPS = 3;
 export const TIME_WARP_HISTORY_SECONDS = 2.5;
 export const CAMERA_LERP = 0.1;
 export const MAX_PARTICLES = 500;
+
+// Game state constants
+export const GAME_STATES = {
+    PLAYING: 'playing',
+    GAME_OVER: 'gameOver',
+    LEVEL_COMPLETE: 'levelComplete',
+    LEVEL_TRANSITION: 'levelTransition'
+};
