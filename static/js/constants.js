@@ -1,0 +1,12 @@
+// ===== GAME CONSTANTS =====
+export const CANVAS_WIDTH = 800;
+export const CANVAS_HEIGHT = 600;
+export const LEVEL_WIDTH = 4000;
+export const GRAVITY = 0.5;
+export const JUMP_POWER = 12;
+export const MOVE_SPEED = 5;
+export const FRICTION = 0.85;
+export const MAX_TIME_WARPS = 3;
+export const TIME_WARP_HISTORY_SECONDS = 2.5;
+export const CAMERA_LERP = 0.1;
+export const MAX_PARTICLES = 500;

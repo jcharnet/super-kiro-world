@@ -1,3 +1,39 @@
+/**
+ * SUPER KIRO WORLD - GAME ENGINE
+ * 
+ * TABLE OF CONTENTS:
+ * ==================
+ * 1. CONSTANTS & SETUP (Lines 1-50)
+ * 2. CORE SYSTEMS (Lines 50-500)
+ *    - ScoreManager
+ *    - ParticlePool & ParticleSystem
+ *    - ScreenShake
+ *    - PowerUpManager
+ * 3. ENTITIES (Lines 500-1500)
+ *    - Player
+ *    - Platform & MovingPlatform
+ *    - Collectible
+ *    - PowerUp
+ *    - Obstacles (Laser, Spike, FallingPlatform)
+ *    - Checkpoint
+ *    - DeployGate
+ * 4. GAME MANAGERS (Lines 1500-1700)
+ *    - ObstacleManager
+ *    - LevelManager
+ *    - Camera
+ * 5. LEVEL SETUP (Lines 1700-2200)
+ *    - Level 1 Configuration
+ *    - Level 2 Configuration (loadLevel2)
+ * 6. RENDERING (Lines 2200-2400)
+ *    - Background
+ *    - HUD
+ *    - Game Over/Complete Screens
+ * 7. GAME LOOP (Lines 2400-2600)
+ *    - Main game loop
+ *    - State management
+ *    - Backend integration
+ */
+
 // ===== GAME CONSTANTS =====
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
@@ -42,6 +78,10 @@ window.addEventListener('keyup', (e) => {
     keys[e.key] = false;
     keys[e.code] = false;
 });
+
+//=============================================================================
+// SECTION 2: CORE SYSTEMS
+//=============================================================================
 
 // ===== SCORE MANAGER =====
 class ScoreManager {
@@ -1352,6 +1392,10 @@ class FallingPlatform extends Obstacle {
     }
 }
 
+//=============================================================================
+// SECTION 3: ENTITIES
+//=============================================================================
+
 // ===== PLAYER CLASS =====
 class Player {
     constructor(x, y) {
@@ -2047,6 +2091,10 @@ class Camera {
     }
 }
 
+//=============================================================================
+// SECTION 5: LEVEL SETUP & INITIALIZATION
+//=============================================================================
+
 // ===== LEVEL SETUP =====
 const scoreManager = new ScoreManager();
 highScore = scoreManager.getHighScore(); // Load high score on initialization
@@ -2265,6 +2313,10 @@ function loadLevel2() {
     console.log('Level 2 loaded!');
 }
 
+//=============================================================================
+// SECTION 6: RENDERING FUNCTIONS
+//=============================================================================
+
 // ===== PARALLAX BACKGROUND =====
 function renderBackground(ctx, camera, frame) {
     // Dark gradient
@@ -2397,6 +2449,10 @@ function renderLevelComplete(ctx) {
     
     ctx.textAlign = 'left';
 }
+
+//=============================================================================
+// SECTION 7: GAME LOOP & MAIN EXECUTION
+//=============================================================================
 
 // ===== GAME LOOP =====
 let frame = 0;
