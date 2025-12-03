@@ -3,75 +3,18 @@
  * Using fast-check library for property-based testing
  */
 
-const fc = require('fast-check');
-const { test } = require('node:test');
-const assert = require('node:assert');
+import fc from 'fast-check';
+import { test } from 'node:test';
+import { MovingPlatform, FallingPlatform } from '../static/js/entities/Platform.js';
+import { LaserHazard, SpikeTrap } from '../static/js/entities/Obstacle.js';
 
-// Mock MovingPlatform for testing
-class MovingPlatform {
-    constructor(x, y, width, height, path, speed) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.path = path || [];
-        this.speed = speed || 1;
-        this.currentPathIndex = 0;
-        this.direction = 1;
-        this.velocity = { x: 0, y: 0 };
-        
-        if (this.path && this.path.length > 1) {
-            this.updateVelocity();
-        }
-    }
-    
-    updateVelocity() {
-        if (!this.path || this.currentPathIndex >= this.path.length) return;
-        
-        const target = this.path[this.currentPathIndex];
-        const dx = target.x - this.x;
-        const dy = target.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > 0) {
-            this.velocity.x = (dx / distance) * this.speed;
-            this.velocity.y = (dy / distance) * this.speed;
-        } else {
-            this.velocity.x = 0;
-            this.velocity.y = 0;
-        }
-    }
-    
-    update(deltaTime) {
-        if (!this.path || this.path.length < 2) return;
-        
-        this.x += this.velocity.x * deltaTime * 60;
-        this.y += this.velocity.y * deltaTime * 60;
-        
-        const target = this.path[this.currentPathIndex];
-        const dx = target.x - this.x;
-        const dy = target.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < this.speed) {
-            if (this.direction === 1) {
-                this.currentPathIndex++;
-                if (this.currentPathIndex >= this.path.length) {
-                    this.currentPathIndex = this.path.length - 2;
-                    this.direction = -1;
-                }
-            } else {
-                this.currentPathIndex--;
-                if (this.currentPathIndex < 0) {
-                    this.currentPathIndex = 1;
-                    this.direction = 1;
-                }
-            }
-            
-            this.updateVelocity();
-        }
-    }
-}
+// Mock window.audioManager for Node.js environment
+global.window = global.window || {};
+global.window.audioManager = {
+    playSound: () => {} // No-op for tests
+};
+
+// Using real classes from refactored code
 
 /**
  * Feature: new-obstacles, Property 1: Moving platforms have valid configuration
@@ -189,37 +132,7 @@ test('Property 2: Moving platforms carry player', () => {
     );
 });
 
-// Mock LaserHazard for testing
-class LaserHazard {
-    constructor(x, y, direction, cycleTime, warningTime, activeTime) {
-        this.x = x;
-        this.y = y;
-        this.direction = direction;
-        this.cycleTime = cycleTime || 3;
-        this.warningTime = warningTime || 1;
-        this.activeTime = activeTime || 1;
-        this.currentTime = 0;
-        this.currentPhase = 'inactive';
-        this.dangerous = false;
-    }
-    
-    update(deltaTime) {
-        this.currentTime += deltaTime;
-        const totalCycle = this.cycleTime;
-        const timeInCycle = this.currentTime % totalCycle;
-        
-        if (timeInCycle < this.warningTime) {
-            this.currentPhase = 'warning';
-            this.dangerous = false;
-        } else if (timeInCycle < this.warningTime + this.activeTime) {
-            this.currentPhase = 'active';
-            this.dangerous = true;
-        } else {
-            this.currentPhase = 'inactive';
-            this.dangerous = false;
-        }
-    }
-}
+// Using real LaserHazard from refactored code
 
 /**
  * Feature: new-obstacles, Property 4: Laser hazards have valid pattern
@@ -347,53 +260,7 @@ test('Property 8: Laser timing is consistent', () => {
     );
 });
 
-// Mock SpikeTrap
-class SpikeTrap {
-    constructor(x, y, orientation) {
-        this.x = x;
-        this.y = y;
-        this.orientation = orientation || 'up';
-        this.dangerous = true;
-    }
-}
-
-// Mock FallingPlatform
-class FallingPlatform {
-    constructor(x, y, width, height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.fallDelay = 0.5;
-        this.fallTimer = 0;
-        this.falling = false;
-        this.fallSpeed = 0;
-        this.originalY = y;
-        this.playerOnPlatform = false;
-    }
-    
-    update(deltaTime) {
-        if (this.falling) {
-            this.fallSpeed += 0.5 * 2;
-            this.y += this.fallSpeed;
-            if (this.y > 700) {
-                this.falling = false;
-            }
-        } else if (this.playerOnPlatform && !this.falling) {
-            this.fallTimer += deltaTime;
-            if (this.fallTimer >= this.fallDelay) {
-                this.falling = true;
-            }
-        }
-        this.playerOnPlatform = false;
-    }
-    
-    startFallTimer() {
-        if (!this.falling && this.y === this.originalY) {
-            this.playerOnPlatform = true;
-        }
-    }
-}
+// Using real SpikeTrap and FallingPlatform from refactored code
 
 test('Property 9: Spikes are placed on valid surfaces', () => {
     fc.assert(
@@ -470,7 +337,6 @@ test('Property 13: Falling platforms respawn', () => {
             fc.integer({ min: 50, max: 150 }),
             (x, y, width) => {
                 const platform = new FallingPlatform(x, y, width, 20);
-                const originalY = platform.y;
                 
                 // Make it fall
                 platform.falling = true;

@@ -307,3 +307,6 @@ function initSplashScreen(canvas, startGame) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { initSplashScreen };
 }
+
+// Make available globally for ES6 modules
+window.initSplashScreen = initSplashScreen;

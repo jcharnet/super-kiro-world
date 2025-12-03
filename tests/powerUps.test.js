@@ -3,9 +3,18 @@
  * Using fast-check library for property-based testing
  */
 
-const fc = require('fast-check');
+import fc from 'fast-check';
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { PowerUpManager } from '../static/js/systems/PowerUpManager.js';
 
-// Mock classes for testing
+// Mock window.audioManager for Node.js environment
+global.window = global.window || {};
+global.window.audioManager = {
+    playSound: () => {} // No-op for tests
+};
+
+// Mock player for testing (simpler than importing full Player class)
 class MockPlayer {
     constructor() {
         this.x = 0;
@@ -18,131 +27,6 @@ class MockPlayer {
         this.doubleJumpAvailable = false;
     }
 }
-
-class PowerUpManager {
-    constructor() {
-        this.activePowerUps = new Map();
-        this.gameSpeedMultiplier = 1.0;
-    }
-    
-    activatePowerUp(type, player) {
-        const config = this.getPowerUpConfig(type);
-        
-        if (this.activePowerUps.has(type)) {
-            const existing = this.activePowerUps.get(type);
-            existing.remainingTime = config.duration;
-        } else {
-            this.activePowerUps.set(type, {
-                type: type,
-                duration: config.duration,
-                remainingTime: config.duration,
-                effect: config.effect
-            });
-            
-            config.effect.apply(player, this);
-        }
-    }
-    
-    update(deltaTime, player) {
-        const toRemove = [];
-        
-        for (const [type, powerUp] of this.activePowerUps) {
-            powerUp.remainingTime -= deltaTime;
-            
-            if (powerUp.remainingTime <= 0) {
-                toRemove.push(type);
-                this.deactivatePowerUp(type, player);
-            }
-        }
-        
-        for (const type of toRemove) {
-            this.activePowerUps.delete(type);
-        }
-    }
-    
-    deactivatePowerUp(type, player) {
-        const config = this.getPowerUpConfig(type);
-        if (config.deactivate) {
-            config.deactivate(player, this);
-        }
-    }
-    
-    isActive(type) {
-        return this.activePowerUps.has(type);
-    }
-    
-    getRemainingTime(type) {
-        const powerUp = this.activePowerUps.get(type);
-        return powerUp ? powerUp.remainingTime : 0;
-    }
-    
-    deactivateAll(player) {
-        for (const [type, powerUp] of this.activePowerUps) {
-            this.deactivatePowerUp(type, player);
-        }
-        this.activePowerUps.clear();
-    }
-    
-    getPowerUpConfig(type) {
-        const configs = {
-            speed: {
-                duration: 5,
-                effect: {
-                    apply: (player, manager) => {
-                        player.speedMultiplier = 1.5;
-                    }
-                },
-                deactivate: (player, manager) => {
-                    player.speedMultiplier = 1.0;
-                }
-            },
-            invincibility: {
-                duration: 8,
-                effect: {
-                    apply: (player, manager) => {
-                        player.invincible = true;
-                    }
-                },
-                deactivate: (player, manager) => {
-                    player.invincible = false;
-                }
-            },
-            doubleJump: {
-                duration: 10,
-                effect: {
-                    apply: (player, manager) => {
-                        player.hasDoubleJump = true;
-                        player.doubleJumpAvailable = true;
-                    }
-                },
-                deactivate: (player, manager) => {
-                    player.hasDoubleJump = false;
-                    player.doubleJumpAvailable = false;
-                }
-            },
-            slowMotion: {
-                duration: 4,
-                effect: {
-                    apply: (player, manager) => {
-                        manager.gameSpeedMultiplier = 0.5;
-                    }
-                },
-                deactivate: (player, manager) => {
-                    manager.gameSpeedMultiplier = 1.0;
-                }
-            }
-        };
-        
-        return configs[type] || { duration: 0, effect: { apply: () => {} } };
-    }
-    
-    getGameSpeedMultiplier() {
-        return this.gameSpeedMultiplier;
-    }
-}
-
-const { test } = require('node:test');
-const assert = require('node:assert');
 
 /**
  * Feature: power-ups, Property 10: Multiple power-ups stack effects

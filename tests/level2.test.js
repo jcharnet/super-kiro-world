@@ -1,21 +1,8 @@
-const fc = require('fast-check');
-const { test } = require('node:test');
-
-class LevelManager {
-    constructor() {
-        this.currentLevel = 1;
-        this.levels = new Map();
-    }
-    
-    loadLevel(levelNumber) {
-        this.currentLevel = levelNumber;
-        return this.levels.get(levelNumber);
-    }
-    
-    addLevelConfig(levelNumber, config) {
-        this.levels.set(levelNumber, config);
-    }
-}
+import fc from 'fast-check';
+import { test } from 'node:test';
+import { LevelManager } from '../static/js/systems/LevelManager.js';
+import { setupLevel1 } from '../static/js/levels/Level1.js';
+import { setupLevel2 } from '../static/js/levels/Level2.js';
 
 test('Property 1: Level transition loads level 2', () => {
     fc.assert(
